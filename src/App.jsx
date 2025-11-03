@@ -6,149 +6,117 @@ import * as THREE from 'three'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { TransformControls } from '@react-three/drei'
-
-function Sphere({id, position, isSelected, onSelect, orbitRef, onUpdatePosition}) {
-  const meshRef = useRef()
-  const transformRef = useRef()
-  return (
-    <>
-      <mesh 
-        ref={meshRef} 
-        position={position} 
-        onClick={() => onSelect(id)}
-      >
-        <sphereGeometry args={[0.2, 32, 32]} />
-        <meshStandardMaterial color={isSelected ? 'blue' : 'white'} />
-      </mesh>
-      {isSelected && (
-        <TransformControls
-          object={meshRef.current}
-          mode="translate"
-          ref={transformRef}
-          onMouseDown={() => {
-            if (orbitRef.current) orbitRef.current.enabled = false
-          }}
-          onMouseUp={() => {
-            if (orbitRef.current) orbitRef.current.enabled = true
-          }}
-          onObjectChange={() => {
-            const newPos = meshRef.current.position;
-            onUpdatePosition(id, [newPos.x, newPos.y, newPos.z]);
-          }}
-        />
-      )}
-    </>
-  )
-}
-
-function calculateField(chargePositions, targetPos){
-  const multiplier = 5;
-  let resultField = new THREE.Vector3(0,0,0);
-  for (let chargePos of chargePositions){
-    const rVec = new THREE.Vector3().subVectors(targetPos, chargePos);
-    const r = rVec.length();
-    if (r < 0.1) continue;
-    const fieldMagnitude = multiplier / (r * r);
-    const fieldVec = rVec.normalize().multiplyScalar(fieldMagnitude);
-    resultField.add(fieldVec);
-  }
-  return resultField;
-}
-
-function Arrow({ position, direction, length, color = 0xffff00 }) {
-  const arrowHelper = useMemo(() => {
-    return new THREE.ArrowHelper(
-      direction.clone().normalize(),
-      position.clone(),
-      length,
-      color
-    );
-  }, [position, direction, length, color]);
-
-  return <primitive object={arrowHelper} />;
-}
-
-function FieldArrows({chargePositions}){
-  const arrows = []
-  for (let x = -5; x <= 5; x += 1){
-    for (let y = -5; y <= 5; y += 1){
-      for (let z = -5; z <= 5; z += 1){
-        const targPos = new THREE.Vector3(x, y, z);
-        const field = calculateField(chargePositions, targPos);
-        if (field.length() < 0.01) continue
-        arrows.push(
-          <Arrow 
-            key={`${x}-${y}-${z}`} 
-            position={targPos} 
-            direction={field} 
-            length={Math.log1p(field.length()) * 0.5} 
-            color={0xffff00} 
-          />
-        )
-      }
-    }
-  }
-  return <>{arrows}</>
-}
+import useSceneObjects from './components/ui/useSceneObjects'
+import SceneObject from './components/threejs/SceneObject'
+import Grid from './components/models/Grid.jsx'
+import FieldArrows from './components/threejs/FieldArrows.jsx'
+import { add } from 'three/tsl'
 
 function App() {
-  const [spheres, setSpheres] = useState([{
-    id: 1, position: [0,0,0]
-  }])
 
-  const [selectedSphere, setSelectedSphere] = useState(null)
+  const [selectedObj, setSelectedObj] = useState(null)
   const [showField, setShowField] = useState(false)
+  const [isConductor, setIsConductor] = useState(false)
+  const [showOnlyPlane, setShowOnlyPlane] = useState(false)
   const orbitRef = useRef()
-  const idRef = useRef(2)
+  const {objects, addObject, updateObjectPosition, removeObject, changeObjectCharge, addChargeToObject, clearCharges, setNChargesToObject} = useSceneObjects()
+  const [currCharge, setCurrCharge] = useState(1)
+  const [numOfCharges, setNumOfCharges] = useState(0)
 
-  function updateSelectedSphere(id) {
-    if (selectedSphere === id) {
-      setSelectedSphere(null)
-    } else {
-      setSelectedSphere(id)
-    }
-  }
+  // dimension inputs (generic: x, y, z). Use appropriately for each model.
+  const [dimX, setDimX] = useState(1)
+  const [dimY, setDimY] = useState(1)
+  const [dimZ, setDimZ] = useState(1)
 
-  function addSphere() {
-    const newSphere = {
-      id: idRef.current,
-      position: [0,0,0]
-    }
-    setSpheres([...spheres, newSphere])
-    idRef.current += 1
+  const updateSelected = (id) => {
+    setSelectedObj((prev) => (prev === id ? null : id))
+    setCurrCharge(objects.find((obj) => obj.id === id)?.charge || 1)
+    setNumOfCharges(objects.find((obj) => obj.id === id)?.charges.length || 0)
   }
 
   return (
     <>
-      <div id="canvas-container" style={{ width: '100vw', height: '100vh' }}>
-        <button onClick={() => addSphere()}>Add Sphere</button>
+      <div id="canvas-container" style={{ width: '100%', height: '100vh', boxSizing: 'border-box', overflow: 'hidden' }}>
+        <label style={{ marginLeft: 8 }}>
+          <input type="checkbox" checked={isConductor} onChange={(e) => setIsConductor(e.target.checked)} />
+          {' '}Conductor
+        </label>
+        <label style={{ marginLeft: 8 }}>
+          <input type="checkbox" checked={showOnlyPlane} onChange={(e) => setShowOnlyPlane(e.target.checked)} />
+          {' '}Show only xz plane
+        </label>
+        <form onSubmit={(e) => e.preventDefault()} style={{ display: 'inline-block', marginLeft: 8 }}>
+          <label style={{ marginRight: 8 }}>
+            Charge:
+            <input
+              name="value"
+              type="number"
+              step="any"
+              value={currCharge}
+              onChange={(e) => setCurrCharge(Number(e.target.value))}
+              style={{ width: 80, marginLeft: 6 }}
+            />
+          </label>
+          <label style={{ marginRight: 8 }}>
+            Number of charges:
+            <input
+              name="value"
+              type="number"
+              step="any"
+              value={numOfCharges}
+              onChange={(e) => setNumOfCharges(Number(e.target.value))}
+              style={{ width: 80, marginLeft: 6 }}
+            />
+          </label>
+          <label style={{ marginRight: 8 }}>
+            dimX:
+            <input type="number" step="any" value={dimX} onChange={(e) => setDimX(Number(e.target.value))} style={{ width: 64, marginLeft: 6 }} />
+          </label>
+          <label style={{ marginRight: 8 }}>
+            dimY:
+            <input type="number" step="any" value={dimY} onChange={(e) => setDimY(Number(e.target.value))} style={{ width: 64, marginLeft: 6 }} />
+          </label>
+          <label>
+            dimZ:
+            <input type="number" step="any" value={dimZ} onChange={(e) => setDimZ(Number(e.target.value))} style={{ width: 64, marginLeft: 6 }} />
+          </label>
+        </form>
+        <button onClick={() => addObject('sphere', isConductor, {charge:currCharge})}>Add Sphere</button>
         <button onClick={() => {setShowField(!showField)}}>Toggle Field</button>
-        <Canvas onPointerMissed={() => setSelectedSphere(null)} camera={{ position: [0, 0, 10], fov: 60 }}>
+        <button onClick={() => addObject('wire', isConductor, { charge: currCharge, dimensions: [dimX, dimY, dimZ] })}>Add Wire</button>
+        <button onClick={() => addObject('prism', isConductor, { charge: currCharge, dimensions: [dimX, dimY, dimZ] })}>Add Prism</button>
+        <button onClick={() => addObject('sheet', isConductor, { charge: currCharge, dimensions: [dimX, dimY] })}>Add Sheet</button>
+        <button onClick={() => removeObject(selectedObj)} disabled={selectedObj === null}>Remove Selected</button>
+
+        <button onClick={() => changeObjectCharge(selectedObj, currCharge)} disabled={selectedObj === null}>Change Selected Charge</button>
+        <button onClick={() => {clearCharges(selectedObj); setNumOfCharges(0)}} disabled={selectedObj === null}>Clear Selected Charges</button>
+        <button onClick={() => {setNChargesToObject(selectedObj, numOfCharges)}} disabled={selectedObj === null}>Set {numOfCharges} Charges on Selected</button>
+
+
+        <Canvas onPointerMissed={() => setSelectedObj(null)} camera={{ position: [0, 0, 10], fov: 60 }}>
           <color attach="background" args={['black']} />
-          <gridHelper args={[10, 10]} />
-          <axesHelper args={[5]} />
+          <Grid/>
           <ambientLight intensity={0.5} />
           <directionalLight color="white" position={[0, 0, 5]} />
           <OrbitControls ref={orbitRef}/>
 
-          {spheres.map((sphere) => (
-            <Sphere 
-              key={sphere.id} 
-              id={sphere.id} 
-              position={sphere.position} 
-              isSelected={selectedSphere === sphere.id} 
-              onSelect={(id) => updateSelectedSphere(id)} 
-              onUpdatePosition={(id, newPos) => {
-                setSpheres(prev =>
-                  prev.map(s => s.id === id ? { ...s, position: newPos } : s))
-              }}
+          {objects.map((obj) => (
+            <SceneObject 
+              key={obj.id} 
+              object={obj} 
+              isSelected={selectedObj === obj.id} 
+              onSelect={updateSelected} 
               orbitRef={orbitRef}
+              onUpdatePosition={updateObjectPosition}
+              onRemove={removeObject}
+              onChangeCharge={changeObjectCharge}
+              addChargeToObject={(id, position, charge) => {addChargeToObject(id, position, charge); setNumOfCharges(obj?.charges.length + 1 || 0);}}
+              clearCharges={clearCharges}
             />
           ))}
+
           {showField && (
-            <FieldArrows 
-              chargePositions={spheres.map(s => new THREE.Vector3(...s.position))} 
-            />
+            <FieldArrows objects={objects} showOnlyPlane={showOnlyPlane}/>
           )}
         </Canvas>
       </div>
