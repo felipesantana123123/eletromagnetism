@@ -3,8 +3,8 @@ import calculateField from '../../utils/calculateField.js';
 import Arrow from '../models/Arrow.jsx';
 import getFieldVectors from '../../utils/getFieldVectors.js';
 
-export default function FieldArrows({ objects, showOnlyPlane = false }) {
-    const vectors = getFieldVectors(objects, 5, 1, showOnlyPlane);
+export default function FieldArrows({ objects, showOnlyPlane = false, showOnlyGaussianField = false }) {
+    const vectors = getFieldVectors(objects, 5, 1, showOnlyPlane, showOnlyGaussianField);
     let MAX_L = 0;
     for (const {field} of vectors){
         const mag = field.length();

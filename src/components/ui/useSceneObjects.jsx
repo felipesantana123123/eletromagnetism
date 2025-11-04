@@ -2,13 +2,14 @@ import { useState, useRef } from 'react';
 import distributeSheetCharges from '../../utils/distributeSheetCharges.js';
 import distributePrismCharges from '../../utils/distributePrismCharges.js';
 import distributeWireCharges from '../../utils/distributeWireCharges.js';
+import distributeSphereCharges from '../../utils/distributeSphereCharges.js';
 
 export default function useSceneObjects() {
     const [objects, setObjects] = useState([
-        { id: 1, type: 'sphere', position: [0, 0, 0], charge: 1, charges: []},
+        { id: 1, type: 'charge', position: [0, 0, 0], charge: 1, charges: []},
     ]);
     const idRef = useRef(2);
-    function addObject(type, isConductor, options = {}) {
+    function addObject(type, isConductor, isGaussianSurface, options = {}) {
         const {
             position = [0, 0, 0],
             charge = 1,
@@ -20,6 +21,7 @@ export default function useSceneObjects() {
         const newObj = {
             id: idRef.current++, 
             isConductor,
+            isGaussianSurface,
             type, 
             position, 
             dimensions, 
@@ -95,7 +97,7 @@ export default function useSceneObjects() {
                 const dims = obj.dimensions || [1, 1, 1];
                 let positions = [];
                 switch (obj.type) {
-                    case 'sphere':
+                    case 'charge':
                         break;
                     case 'sheet':
                         positions = distributeSheetCharges(dims[0], dims[1], totalCharges);
@@ -105,6 +107,9 @@ export default function useSceneObjects() {
                         break;
                     case 'wire':
                         positions = distributeWireCharges(dims[1], totalCharges);
+                        break;
+                    case 'sphere':
+                        positions = distributeSphereCharges(dims[0], totalCharges);
                         break;
                     default:
                         positions = [];

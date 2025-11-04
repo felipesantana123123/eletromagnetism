@@ -7,7 +7,7 @@ export default function calculateField(objects, targetPos){
   for (const obj of objects){
     const position = new THREE.Vector3(...obj.position);
     const charge = obj.charge;
-    if (obj.type === 'sphere'){
+    if (obj.type === 'charge'){
       const rVec = new THREE.Vector3().subVectors(targetPos, position);
       const rSq = rVec.lengthSq();
       if (rSq < 1e-6) continue;

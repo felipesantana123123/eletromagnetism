@@ -1,5 +1,5 @@
+import { useRef, useEffect } from 'react'
 import * as THREE from 'three'
-import { useRef } from 'react'
 import { TransformControls } from '@react-three/drei'
 
 export default function ModelBase({
@@ -9,6 +9,7 @@ export default function ModelBase({
   color = 'white',
   isSelected,
   onSelect,
+  isGaussianSurface = false,
   orbitRef,
   onUpdatePosition,
   addChargeToObject,
@@ -27,6 +28,7 @@ export default function ModelBase({
       onSelect?.(id)
       return
     }
+    if (isGaussianSurface) return
     event.stopPropagation()
     if (isConductor){
         autoPlaceCharge();
@@ -41,7 +43,7 @@ export default function ModelBase({
     <>
       <mesh ref={meshRef} position={position} onClick={handleClick}>
         {children}
-        <meshStandardMaterial color={color} wireframe={isConductor}/>
+        <meshStandardMaterial color={color} wireframe={isConductor} opacity={isGaussianSurface ? 0.3 : 1} transparent={isGaussianSurface} />
         {charges?.map((c, idx) => (
           <mesh key={idx} position={c.position}>
             <sphereGeometry args={[0.05, 16, 16]} />

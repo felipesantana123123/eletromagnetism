@@ -10,19 +10,23 @@ import useSceneObjects from './components/ui/useSceneObjects'
 import SceneObject from './components/threejs/SceneObject'
 import Grid from './components/models/Grid.jsx'
 import FieldArrows from './components/threejs/FieldArrows.jsx'
-import { add } from 'three/tsl'
+import checkWebGPU from './utils/checkWebGPU.js'
+import parseObjectsToBuffer from './utils/parseObjectsToBuffer.js'
 
 function App() {
 
   const [selectedObj, setSelectedObj] = useState(null)
   const [showField, setShowField] = useState(false)
+  const [showOnlyGaussianField, setShowOnlyGaussianField] = useState(false)
   const [isConductor, setIsConductor] = useState(false)
+  const [creatingGaussianSurface, setCreatingGaussianSurface] = useState(false)
   const [showOnlyPlane, setShowOnlyPlane] = useState(false)
   const orbitRef = useRef()
   const {objects, addObject, updateObjectPosition, removeObject, changeObjectCharge, addChargeToObject, clearCharges, setNChargesToObject} = useSceneObjects()
   const [currCharge, setCurrCharge] = useState(1)
   const [numOfCharges, setNumOfCharges] = useState(0)
-
+  let webGPUavailable = useMemo(() => checkWebGPU(), [])
+  
   // dimension inputs (generic: x, y, z). Use appropriately for each model.
   const [dimX, setDimX] = useState(1)
   const [dimY, setDimY] = useState(1)
@@ -44,6 +48,14 @@ function App() {
         <label style={{ marginLeft: 8 }}>
           <input type="checkbox" checked={showOnlyPlane} onChange={(e) => setShowOnlyPlane(e.target.checked)} />
           {' '}Show only xz plane
+        </label>
+        <label style={{ marginLeft: 8 }}>
+          <input type="checkbox" checked={showOnlyGaussianField} onChange={(e) => setShowOnlyGaussianField(e.target.checked)} />
+          {' '}Show only Gaussian Surfaces Fields
+        </label>
+        <label style={{ marginLeft: 8 }}>
+          <input type="checkbox" checked={creatingGaussianSurface} onChange={(e) => setCreatingGaussianSurface(e.target.checked)} />
+          {' '}Create as Gaussian Surface
         </label>
         <form onSubmit={(e) => e.preventDefault()} style={{ display: 'inline-block', marginLeft: 8 }}>
           <label style={{ marginRight: 8 }}>
@@ -81,11 +93,12 @@ function App() {
             <input type="number" step="any" value={dimZ} onChange={(e) => setDimZ(Number(e.target.value))} style={{ width: 64, marginLeft: 6 }} />
           </label>
         </form>
-        <button onClick={() => addObject('sphere', isConductor, {charge:currCharge})}>Add Sphere</button>
-        <button onClick={() => {setShowField(!showField)}}>Toggle Field</button>
-        <button onClick={() => addObject('wire', isConductor, { charge: currCharge, dimensions: [dimX, dimY, dimZ] })}>Add Wire</button>
-        <button onClick={() => addObject('prism', isConductor, { charge: currCharge, dimensions: [dimX, dimY, dimZ] })}>Add Prism</button>
-        <button onClick={() => addObject('sheet', isConductor, { charge: currCharge, dimensions: [dimX, dimY] })}>Add Sheet</button>
+        <button onClick={() => addObject('charge', false, false, {charge:currCharge})}>Add Charge</button>
+        <button onClick={() => {setShowField(!showField)}}>Toggle Field</button>  
+        <button onClick={() => addObject('sphere', isConductor, creatingGaussianSurface, { charge: currCharge, dimensions: [dimX, dimY, dimZ] })}>Add Sphere</button>
+        <button onClick={() => addObject('wire', isConductor, creatingGaussianSurface, { charge: currCharge, dimensions: [dimX, dimY, dimZ] })}>Add Wire</button>
+        <button onClick={() => addObject('prism', isConductor, creatingGaussianSurface, { charge: currCharge, dimensions: [dimX, dimY, dimZ] })}>Add Prism</button>
+        <button onClick={() => addObject('sheet', isConductor, creatingGaussianSurface, { charge: currCharge, dimensions: [dimX, dimY] })}>Add Sheet</button>
         <button onClick={() => removeObject(selectedObj)} disabled={selectedObj === null}>Remove Selected</button>
 
         <button onClick={() => changeObjectCharge(selectedObj, currCharge)} disabled={selectedObj === null}>Change Selected Charge</button>
@@ -116,7 +129,7 @@ function App() {
           ))}
 
           {showField && (
-            <FieldArrows objects={objects} showOnlyPlane={showOnlyPlane}/>
+            <FieldArrows objects={objects} showOnlyPlane={showOnlyPlane} showOnlyGaussianField={showOnlyGaussianField}/>
           )}
         </Canvas>
       </div>

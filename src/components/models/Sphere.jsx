@@ -1,36 +1,19 @@
-import  { useRef } from 'react'
-import { TransformControls } from '@react-three/drei'
+import ModelBase from './ModelBase.jsx'
+import distributeSphereCharges from '../../utils/distributeSphereCharges.js'
 
-export default function Sphere({id, position, isSelected, onSelect, orbitRef, onUpdatePosition}) {
-  const meshRef = useRef()
-  const transformRef = useRef()
+export default function Sphere(props) {
+  const { dimensions = [1, 1, 1], isSelected } = props
+  const color = isSelected ? 'lightgreen' : 'green'
   return (
-    <>
-      <mesh 
-        ref={meshRef} 
-        position={position} 
-        onClick={() => onSelect(id)}
-      >
-        <sphereGeometry args={[0.2, 32, 32]} />
-        <meshStandardMaterial color={isSelected ? 'blue' : 'white'} />
-      </mesh>
-      {isSelected && (
-        <TransformControls
-          object={meshRef.current}
-          mode="translate"
-          ref={transformRef}
-          onMouseDown={() => {
-            if (orbitRef.current) orbitRef.current.enabled = false
-          }}
-          onMouseUp={() => {
-            if (orbitRef.current) orbitRef.current.enabled = true
-          }}
-          onObjectChange={() => {
-            const newPos = meshRef.current.position;
-            onUpdatePosition(id, [newPos.x, newPos.y, newPos.z]);
-          }}
-        />
-      )}
-    </>
+    <ModelBase {...props} color={color} autoPlaceCharge={() => {
+        const { id, addChargeToObject, clearCharges, charge, charges = [] } = props
+        const radius = (dimensions[0] || 1)
+        const total = charges.length + 1
+        const newCharges = distributeSphereCharges(radius, total)
+        clearCharges?.(id)
+        newCharges.forEach(pos => addChargeToObject?.(id, pos, charge))
+    }}>
+        <sphereGeometry args={[dimensions[0], 32, 32]} />
+    </ModelBase>
   )
 }

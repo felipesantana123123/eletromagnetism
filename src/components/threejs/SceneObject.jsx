@@ -2,16 +2,18 @@ import FieldArrows from './FieldArrows.jsx'
 import Wire from '../models/Wire.jsx'
 import Prism from '../models/Prism.jsx'
 import Sheet from '../models/Sheet.jsx'
-import Sphere from '../models/Sphere.jsx'
+import Charge from '../models/Charge.jsx'
 import Grid from '../models/Grid.jsx'
+import Sphere from '../models/Sphere.jsx'
 
 const COMPONENT_MAP = {
     fieldArrows: FieldArrows,
     wire: Wire,
     prism: Prism,
     sheet: Sheet,
-    sphere: Sphere,
+    charge: Charge,
     grid: Grid,
+    sphere: Sphere
 };
 
 export default function SceneObject({ object, addChargeToObject, ...props }) {
