@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import calculateField from './calculateField'
 
 export default function getFieldVectors(objects, gridSize = 5, step = 1, showOnlyPlane = false, showOnlyGaussianField = false) {
+
   const fieldVectors = []
 
   if (!showOnlyGaussianField) {

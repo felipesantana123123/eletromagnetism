@@ -1,4 +1,4 @@
-import FieldArrows from './Field.jsx'
+import Field from './Field.jsx'
 import Wire from '../models/Wire.jsx'
 import Prism from '../models/Prism.jsx'
 import Sheet from '../models/Sheet.jsx'
@@ -7,7 +7,7 @@ import Grid from '../models/Grid.jsx'
 import Sphere from '../models/Sphere.jsx'
 
 const COMPONENT_MAP = {
-    fieldArrows: FieldArrows,
+    field: Field,
     wire: Wire,
     prism: Prism,
     sheet: Sheet,

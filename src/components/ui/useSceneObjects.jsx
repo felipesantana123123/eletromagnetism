@@ -13,7 +13,6 @@ export default function useSceneObjects() {
         const {
             position = [0, 0, 0],
             charge = 1,
-            chargeDensity = 0,
             charges = [],
             dimensions = [1, 1, 1],
             orientation = [0, 0, 0],
@@ -21,13 +20,12 @@ export default function useSceneObjects() {
         } = options;
         const newObj = {
             id: idRef.current++, 
-            isConductor,
-            isGaussianSurface,
+            isConductor, 
+            isGaussianSurface, 
             type, 
             position, 
             dimensions, 
             orientation,
-            chargeDensity,
             charge,
             charges: [],
             isInfinite,
