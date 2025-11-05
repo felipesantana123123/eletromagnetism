@@ -17,6 +17,7 @@ export default function useSceneObjects() {
             charges = [],
             dimensions = [1, 1, 1],
             orientation = [0, 0, 0],
+            isInfinite = false,
         } = options;
         const newObj = {
             id: idRef.current++, 
@@ -29,6 +30,7 @@ export default function useSceneObjects() {
             chargeDensity,
             charge,
             charges: [],
+            isInfinite,
         };
         setObjects((prev) => [...prev, newObj]);
     }
@@ -122,6 +124,16 @@ export default function useSceneObjects() {
         );
     }
 
+    function setInfinite(id) {
+        setObjects(prev =>
+            prev.map(obj =>
+            obj.id === id
+                ? { ...obj, isInfinite: !obj.isInfinite }
+                : obj
+            )
+        );
+    }
+
     return {
         objects,
         addObject,
@@ -132,5 +144,6 @@ export default function useSceneObjects() {
         addChargeToObject,
         clearCharges,
         setNChargesToObject,
+        setInfinite,
     };
 }

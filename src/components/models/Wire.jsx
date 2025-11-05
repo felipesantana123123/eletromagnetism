@@ -2,9 +2,9 @@ import ModelBase from './ModelBase.jsx'
 import distributeWireCharges from '../../utils/distributeWireCharges.js'
 
 export default function Wire(props) {
-  const { dimensions = [0.2, 1, 0.2], isSelected} = props
+  const { dimensions = [0.2, 1, 0.2], isSelected, isInfinite} = props
   const color = isSelected ? 'orange' : 'darkorange'
-
+  const height = isInfinite ? 10 : dimensions[1] || 1
   return (
     <ModelBase
       {...props}
@@ -18,7 +18,7 @@ export default function Wire(props) {
         newCharges.forEach(pos => addChargeToObject?.(id, pos, charge))
       }}
     >
-      <cylinderGeometry args={[dimensions[0], dimensions[0], dimensions[1], 8]} />
+      <cylinderGeometry args={[dimensions[0], dimensions[0], height, 8]} />
     </ModelBase>
   )
 }

@@ -10,8 +10,8 @@ import useSceneObjects from './components/ui/useSceneObjects'
 import SceneObject from './components/threejs/SceneObject'
 import Grid from './components/models/Grid.jsx'
 import FieldArrows from './components/threejs/FieldArrows.jsx'
-import checkWebGPU from './utils/checkWebGPU.js'
-import parseObjectsToBuffer from './utils/parseObjectsToBuffer.js'
+import checkWebGPU from './utils/gpu/checkWebGPU.js'
+import parseObjectsToBuffer from './utils/gpu/parseObjectsToBuffer.js'
 
 function App() {
 
@@ -22,7 +22,7 @@ function App() {
   const [creatingGaussianSurface, setCreatingGaussianSurface] = useState(false)
   const [showOnlyPlane, setShowOnlyPlane] = useState(false)
   const orbitRef = useRef()
-  const {objects, addObject, updateObjectPosition, removeObject, changeObjectCharge, addChargeToObject, clearCharges, setNChargesToObject} = useSceneObjects()
+  const {objects, setInfinite, addObject, updateObjectPosition, removeObject, changeObjectCharge, addChargeToObject, clearCharges, setNChargesToObject} = useSceneObjects()
   const [currCharge, setCurrCharge] = useState(1)
   const [numOfCharges, setNumOfCharges] = useState(0)
   let webGPUavailable = useMemo(() => checkWebGPU(), [])
@@ -104,7 +104,7 @@ function App() {
         <button onClick={() => changeObjectCharge(selectedObj, currCharge)} disabled={selectedObj === null}>Change Selected Charge</button>
         <button onClick={() => {clearCharges(selectedObj); setNumOfCharges(0)}} disabled={selectedObj === null}>Clear Selected Charges</button>
         <button onClick={() => {setNChargesToObject(selectedObj, numOfCharges)}} disabled={selectedObj === null}>Set {numOfCharges} Charges on Selected</button>
-
+        <button onClick={() => {setInfinite(selectedObj)}} disabled={selectedObj === null}>Set Selected as Infinite</button>
 
         <Canvas onPointerMissed={() => setSelectedObj(null)} camera={{ position: [0, 0, 10], fov: 60 }}>
           <color attach="background" args={['black']} />

@@ -43,7 +43,7 @@ export default function ModelBase({
     <>
       <mesh ref={meshRef} position={position} onClick={handleClick}>
         {children}
-        <meshStandardMaterial color={color} wireframe={isConductor} opacity={isGaussianSurface ? 0.3 : 1} transparent={isGaussianSurface} />
+        <meshStandardMaterial side={THREE.DoubleSide} color={color} wireframe={isConductor} opacity={isGaussianSurface ? 0.3 : 1} transparent={isGaussianSurface} />
         {charges?.map((c, idx) => (
           <mesh key={idx} position={c.position}>
             <sphereGeometry args={[0.05, 16, 16]} />
