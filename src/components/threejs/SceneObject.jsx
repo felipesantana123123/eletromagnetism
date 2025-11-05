@@ -1,4 +1,4 @@
-import FieldArrows from './FieldArrows.jsx'
+import FieldArrows from './Field.jsx'
 import Wire from '../models/Wire.jsx'
 import Prism from '../models/Prism.jsx'
 import Sheet from '../models/Sheet.jsx'

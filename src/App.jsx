@@ -9,7 +9,7 @@ import { TransformControls } from '@react-three/drei'
 import useSceneObjects from './components/ui/useSceneObjects'
 import SceneObject from './components/threejs/SceneObject'
 import Grid from './components/models/Grid.jsx'
-import FieldArrows from './components/threejs/FieldArrows.jsx'
+import Field from './components/threejs/Field.jsx'
 import checkWebGPU from './utils/gpu/checkWebGPU.js'
 import parseObjectsToBuffer from './utils/gpu/parseObjectsToBuffer.js'
 
@@ -25,7 +25,7 @@ function App() {
   const {objects, setInfinite, addObject, updateObjectPosition, removeObject, changeObjectCharge, addChargeToObject, clearCharges, setNChargesToObject} = useSceneObjects()
   const [currCharge, setCurrCharge] = useState(1)
   const [numOfCharges, setNumOfCharges] = useState(0)
-  let webGPUavailable = useMemo(() => checkWebGPU(), [])
+  //let webGPUavailable = useMemo(() => checkWebGPU(), [])
   
   // dimension inputs (generic: x, y, z). Use appropriately for each model.
   const [dimX, setDimX] = useState(1)
@@ -129,7 +129,7 @@ function App() {
           ))}
 
           {showField && (
-            <FieldArrows objects={objects} showOnlyPlane={showOnlyPlane} showOnlyGaussianField={showOnlyGaussianField}/>
+            <Field objects={objects} showOnlyPlane={showOnlyPlane} showOnlyGaussianField={showOnlyGaussianField}/>
           )}
         </Canvas>
       </div>
